@@ -19,8 +19,4 @@
         <None Remove="tailwindcss-windows-x64.exe"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Content Include=".github\workflows\deploy.yml"/>
-    </ItemGroup>
-
 </Project>
