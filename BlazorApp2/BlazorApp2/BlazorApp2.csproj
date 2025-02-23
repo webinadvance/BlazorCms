@@ -15,4 +15,8 @@
         <Folder Include="wwwroot\lib\"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <None Remove="tailwindcss-windows-x64.exe"/>
+    </ItemGroup>
+
 </Project>
