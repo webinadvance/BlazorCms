@@ -33,10 +33,10 @@ jobs:
           echo -e "Host *\n\tStrictHostKeyChecking no\n\tPort 2222\n\t" > ~/.ssh/config
 
           rsync -avz -e "ssh -i ~/.ssh/deploy_key -p 2222" --delete \
-            app/publish/ root@$HOST:/var/www/kymera.cloud
+            BlazorApp2/publish/ root@$HOST:/var/www/kymera.cloud
 
           ssh -i ~/.ssh/deploy_key -p 2222 root@$HOST << 'ENDSSH'
-            cd /var/www/kymera.cloud/blazor
+            cd /var/www/kymera.cloud
             systemctl restart kymera
             sleep 2
             systemctl status kymera
