@@ -10,3 +10,4 @@
 
 - Super concise answers, use as less tokens as you can
 - Present all code modifications as standard git patch files, Put all patches into a single file so i can copy/paste it
+- NEVER add code comments
