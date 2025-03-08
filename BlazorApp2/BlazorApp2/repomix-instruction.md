@@ -2,8 +2,7 @@
 
 - Write simple and clean code, prioritize readability and maintainability.
 - Avoid unnecessary complexity, keep it concise and straightforward.
-- Keep the output super minimal and concise.
-- in Output, generate PowerShell script for automating modifications to the code.
+- Super minimal and as less as possible modifications
 
 # Project Stack
 
