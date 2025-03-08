@@ -1,0 +1,13 @@
+﻿{
+  "include": [
+    "**/*.cs",
+    "**/*.razor"
+  ],
+  "ignore": {
+    "customPatterns": [
+      "**/obj/**",
+      "**/debug/**",
+      "**/appsettings*.json"
+    ]
+  }
+}
