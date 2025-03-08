@@ -3,6 +3,7 @@
 - Write simple and clean code, prioritize readability and maintainability.
 - Avoid unnecessary complexity, keep it concise and straightforward.
 - Super minimal and as less as possible modifications
+- Present all code modifications as standard git patch files
 
 # Project Stack
 
