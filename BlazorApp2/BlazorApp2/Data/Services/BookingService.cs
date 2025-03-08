@@ -8,26 +8,19 @@ public class BookingService
     {
         _context = context;
     }
-
-    // Resources
     public async Task<List<Resource>> GetResourcesAsync()
     {
-        return await _context.Resources.Include(r => r.ResourceType)
-            .ToListAsync();
+        return await _context.Resources.ToListAsync();
     }
     public async Task<Resource?> GetResourceByIdAsync(int id)
     {
-        return await _context.Resources.Include(r => r.ResourceType)
-            .FirstOrDefaultAsync(r => r.Id == id);
+        return await _context.Resources.FirstOrDefaultAsync(r => r.Id == id);
     }
-
-    // Resource Types
-    public async Task<List<ResourceType>> GetResourceTypesAsync()
+    public async Task<List<Resource>> GetResourcesByCategoryAsync(string category)
     {
-        return await _context.ResourceTypes.ToListAsync();
+        return await _context.Resources.Where(r => r.Category == category)
+            .ToListAsync();
     }
-
-    // Customers
     public async Task<List<Customer>> GetCustomersAsync()
     {
         return await _context.Customers.ToListAsync();
@@ -43,8 +36,6 @@ public class BookingService
         await _context.SaveChangesAsync();
         return customer;
     }
-
-    // Bookings
     public async Task<List<Booking>> GetBookingsAsync()
     {
         return await _context.Bookings.Include(b => b.Customer)
@@ -71,7 +62,6 @@ public class BookingService
     }
     public async Task<Booking> CreateBookingAsync(Booking booking)
     {
-        // Check availability
         var conflictingBookings = await _context.Bookings.Where(b =>
                 b.ResourceId == booking.ResourceId && b.Status != BookingStatus.Cancelled &&
                 ((b.StartTime <= booking.StartTime && b.EndTime > booking.StartTime) ||
@@ -80,8 +70,6 @@ public class BookingService
             .AnyAsync();
         if (conflictingBookings)
             throw new InvalidOperationException("The resource is not available during the selected time period.");
-
-        // Calculate price based on duration and resource rates
         var resource = await _context.Resources.FindAsync(booking.ResourceId);
         if (resource != null)
         {
