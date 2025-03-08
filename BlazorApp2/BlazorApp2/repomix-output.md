@@ -1,30 +1,23 @@
 This file is a merged representation of a subset of the codebase, containing specifically included files and files not matching ignore patterns, combined into a single document by Repomix.
+The content has been processed where comments have been removed, empty lines have been removed.
 
-================================================================
-File Summary
-================================================================
+# File Summary
 
-Purpose:
---------
+## Purpose
 This file contains a packed representation of the entire repository's contents.
 It is designed to be easily consumable by AI systems for analysis, code review,
 or other automated processes.
 
-File Format:
-------------
+## File Format
 The content is organized as follows:
 1. This summary section
 2. Repository information
 3. Directory structure
 4. Multiple file entries, each consisting of:
-  a. A separator line (================)
-  b. The file path (File: path/to/file)
-  c. Another separator line
-  d. The full contents of the file
-  e. A blank line
+  a. A header with the file path (## File: path/to/file)
+  b. The full contents of the file in a code block
 
-Usage Guidelines:
------------------
+## Usage Guidelines
 - This file should be treated as read-only. Any changes should be made to the
   original repository files, not this packed version.
 - When processing this file, use the file path to distinguish
@@ -32,21 +25,25 @@ Usage Guidelines:
 - Be aware that this file may contain sensitive information. Handle it with
   the same level of security as you would the original repository.
 
-Notes:
-------
+- Pay special attention to the Repository Instruction. These contain important context and guidelines specific to this project.
+
+## Notes
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: **/*.cs
-- Files matching these patterns are excluded: **/obj/**, **/debug/**
+- Only files matching these patterns are included: **/*.cs, **/*.razor
+- Files matching these patterns are excluded: **/obj/**, **/debug/**, **/appsettings*.json
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
+- Code comments have been removed from supported file types
+- Empty lines have been removed from all files
 
-Additional Info:
-----------------
+## Additional Info
 
-================================================================
-Directory Structure
-================================================================
+# Directory Structure
+```
+Components/_Imports.razor
+Components/App.razor
+Components/Pages/Error.razor
 Data/ApplicationDbContext.cs
 Data/DbInitializer.cs
 Data/Models/Booking.cs
@@ -59,14 +56,92 @@ Migrations/20250308141958_InitialCreate.cs
 Migrations/20250308141958_InitialCreate.Designer.cs
 Migrations/ApplicationDbContextModelSnapshot.cs
 Program.cs
+```
 
-================================================================
-Files
-================================================================
+# Files
 
-================
-File: Data/ApplicationDbContext.cs
-================
+## File: Components/_Imports.razor
+```
+@using System.Net.Http
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@using BlazorApp2
+@using BlazorApp2.Client
+@using BlazorApp2.Components
+```
+
+## File: Components/App.razor
+```
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <base href="/"/>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <link href="/app.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="@Assets["app.css"]"/>
+    <ImportMap/>
+    <link rel="icon" type="image/png" href="favicon.png"/>
+    <HeadOutlet @rendermode="InteractiveWebAssembly"/>
+</head>
+
+<body>
+<Routes @rendermode="InteractiveWebAssembly"/>
+<script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
+```
+
+## File: Components/Pages/Error.razor
+```
+@page "/Error"
+@using System.Diagnostics
+
+<PageTitle>Error</PageTitle>
+
+<h1 class="text-danger">Error.</h1>
+<h2 class="text-danger">An error occurred while processing your request.</h2>
+
+@if (ShowRequestId)
+{
+    <p>
+        <strong>Request ID:</strong> <code>@RequestId</code>
+    </p>
+}
+
+<h3>Development Mode</h3>
+<p>
+    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
+</p>
+<p>
+    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
+    It can result in displaying sensitive information from exceptions to end users.
+    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
+    and restarting the app.
+</p>
+
+@code{
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
+    private string? RequestId { get; set; }
+    private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+
+    protected override void OnInitialized() =>
+        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+
+}
+```
+
+## File: Data/ApplicationDbContext.cs
+```csharp
 using BlazorApp2.Data.Models;
 using Microsoft.EntityFrameworkCore;
 namespace BlazorApp2.Data;
@@ -81,7 +156,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<Booking> Bookings { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Configure relationships
         modelBuilder.Entity<Booking>()
             .HasOne(b => b.Customer)
             .WithMany(c => c.Bookings)
@@ -97,8 +171,6 @@ public class ApplicationDbContext : DbContext
             .WithMany(rt => rt.Resources)
             .HasForeignKey(r => r.ResourceTypeId)
             .OnDelete(DeleteBehavior.SetNull);
-
-        // Seed data
         modelBuilder.Entity<ResourceType>()
             .HasData(new ResourceType { Id = 1, Name = "Room", Description = "Meeting or event rooms" },
                 new ResourceType { Id = 2, Name = "Equipment", Description = "Rentable equipment" },
@@ -136,10 +208,10 @@ public class ApplicationDbContext : DbContext
                 });
     }
 }
+```
 
-================
-File: Data/DbInitializer.cs
-================
+## File: Data/DbInitializer.cs
+```csharp
 using Microsoft.EntityFrameworkCore;
 namespace BlazorApp2.Data;
 public static class DbInitializer
@@ -148,15 +220,13 @@ public static class DbInitializer
     {
         using var scope = app.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-        // Apply migrations and create database if it doesn't exist
         await context.Database.MigrateAsync();
     }
 }
+```
 
-================
-File: Data/Models/Booking.cs
-================
+## File: Data/Models/Booking.cs
+```csharp
 namespace BlazorApp2.Data.Models;
 public class Booking
 {
@@ -171,10 +241,10 @@ public class Booking
     public int ResourceId { get; set; }
     public Resource? Resource { get; set; }
 }
+```
 
-================
-File: Data/Models/BookingStatus.cs
-================
+## File: Data/Models/BookingStatus.cs
+```csharp
 namespace BlazorApp2.Data.Models;
 public enum BookingStatus
 {
@@ -183,10 +253,10 @@ public enum BookingStatus
     Cancelled,
     Completed
 }
+```
 
-================
-File: Data/Models/Customer.cs
-================
+## File: Data/Models/Customer.cs
+```csharp
 namespace BlazorApp2.Data.Models;
 public class Customer
 {
@@ -196,10 +266,10 @@ public class Customer
     public string Phone { get; set; } = string.Empty;
     public List<Booking> Bookings { get; set; } = new();
 }
+```
 
-================
-File: Data/Models/Resource.cs
-================
+## File: Data/Models/Resource.cs
+```csharp
 namespace BlazorApp2.Data.Models;
 public class Resource
 {
@@ -213,10 +283,10 @@ public class Resource
     public int? ResourceTypeId { get; set; }
     public ResourceType? ResourceType { get; set; }
 }
+```
 
-================
-File: Data/Models/ResourceType.cs
-================
+## File: Data/Models/ResourceType.cs
+```csharp
 namespace BlazorApp2.Data.Models;
 public class ResourceType
 {
@@ -225,10 +295,10 @@ public class ResourceType
     public string Description { get; set; } = string.Empty;
     public List<Resource> Resources { get; set; } = new();
 }
+```
 
-================
-File: Data/Services/BookingService.cs
-================
+## File: Data/Services/BookingService.cs
+```csharp
 using BlazorApp2.Data.Models;
 using Microsoft.EntityFrameworkCore;
 namespace BlazorApp2.Data.Services;
@@ -239,8 +309,6 @@ public class BookingService
     {
         _context = context;
     }
-
-    // Resources
     public async Task<List<Resource>> GetResourcesAsync()
     {
         return await _context.Resources.Include(r => r.ResourceType)
@@ -251,14 +319,10 @@ public class BookingService
         return await _context.Resources.Include(r => r.ResourceType)
             .FirstOrDefaultAsync(r => r.Id == id);
     }
-
-    // Resource Types
     public async Task<List<ResourceType>> GetResourceTypesAsync()
     {
         return await _context.ResourceTypes.ToListAsync();
     }
-
-    // Customers
     public async Task<List<Customer>> GetCustomersAsync()
     {
         return await _context.Customers.ToListAsync();
@@ -274,8 +338,6 @@ public class BookingService
         await _context.SaveChangesAsync();
         return customer;
     }
-
-    // Bookings
     public async Task<List<Booking>> GetBookingsAsync()
     {
         return await _context.Bookings.Include(b => b.Customer)
@@ -302,7 +364,6 @@ public class BookingService
     }
     public async Task<Booking> CreateBookingAsync(Booking booking)
     {
-        // Check availability
         var conflictingBookings = await _context.Bookings.Where(b =>
                 b.ResourceId == booking.ResourceId && b.Status != BookingStatus.Cancelled &&
                 ((b.StartTime <= booking.StartTime && b.EndTime > booking.StartTime) ||
@@ -311,8 +372,6 @@ public class BookingService
             .AnyAsync();
         if (conflictingBookings)
             throw new InvalidOperationException("The resource is not available during the selected time period.");
-
-        // Calculate price based on duration and resource rates
         var resource = await _context.Resources.FindAsync(booking.ResourceId);
         if (resource != null)
         {
@@ -340,23 +399,18 @@ public class BookingService
         return booking;
     }
 }
+```
 
-================
-File: Migrations/20250308141958_InitialCreate.cs
-================
+## File: Migrations/20250308141958_InitialCreate.cs
+```csharp
 using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-
 #nullable disable
-
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
+#pragma warning disable CA1814
 namespace BlazorApp2.Migrations
 {
-    /// <inheritdoc />
     public partial class InitialCreate : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -373,7 +427,6 @@ namespace BlazorApp2.Migrations
                 {
                     table.PrimaryKey("PK_Customers", x => x.Id);
                 });
-
             migrationBuilder.CreateTable(
                 name: "ResourceTypes",
                 columns: table => new
@@ -387,7 +440,6 @@ namespace BlazorApp2.Migrations
                 {
                     table.PrimaryKey("PK_ResourceTypes", x => x.Id);
                 });
-
             migrationBuilder.CreateTable(
                 name: "Resources",
                 columns: table => new
@@ -411,7 +463,6 @@ namespace BlazorApp2.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                 });
-
             migrationBuilder.CreateTable(
                 name: "Bookings",
                 columns: table => new
@@ -442,7 +493,6 @@ namespace BlazorApp2.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
             migrationBuilder.InsertData(
                 table: "ResourceTypes",
                 columns: new[] { "Id", "Description", "Name" },
@@ -452,7 +502,6 @@ namespace BlazorApp2.Migrations
                     { 2, "Rentable equipment", "Equipment" },
                     { 3, "Bookable services", "Service" }
                 });
-
             migrationBuilder.InsertData(
                 table: "Resources",
                 columns: new[] { "Id", "DailyRate", "Description", "HourlyRate", "IsAvailable", "Name", "ResourceTypeId" },
@@ -462,45 +511,36 @@ namespace BlazorApp2.Migrations
                     { 2, 180m, "Small meeting room", 30m, true, "Meeting Room B", 1 },
                     { 3, 60m, "HD Projector", 15m, true, "Projector", 2 }
                 });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Bookings_CustomerId",
                 table: "Bookings",
                 column: "CustomerId");
-
             migrationBuilder.CreateIndex(
                 name: "IX_Bookings_ResourceId",
                 table: "Bookings",
                 column: "ResourceId");
-
             migrationBuilder.CreateIndex(
                 name: "IX_Resources_ResourceTypeId",
                 table: "Resources",
                 column: "ResourceTypeId");
         }
-
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
                 name: "Bookings");
-
             migrationBuilder.DropTable(
                 name: "Customers");
-
             migrationBuilder.DropTable(
                 name: "Resources");
-
             migrationBuilder.DropTable(
                 name: "ResourceTypes");
         }
     }
 }
+```
 
-================
-File: Migrations/20250308141958_InitialCreate.Designer.cs
-================
-// <auto-generated />
+## File: Migrations/20250308141958_InitialCreate.Designer.cs
+```csharp
 using System;
 using BlazorApp2.Data;
 using Microsoft.EntityFrameworkCore;
@@ -508,122 +548,86 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-
 #nullable disable
-
 namespace BlazorApp2.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20250308141958_InitialCreate")]
     partial class InitialCreate
     {
-        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
-
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
             modelBuilder.Entity("BlazorApp2.Data.Models.Booking", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
-
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
-
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("ResourceId")
                         .HasColumnType("int");
-
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
-
                     b.Property<int>("Status")
                         .HasColumnType("int");
-
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
-
                     b.HasKey("Id");
-
                     b.HasIndex("CustomerId");
-
                     b.HasIndex("ResourceId");
-
                     b.ToTable("Bookings");
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.Customer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
-
                     b.ToTable("Customers");
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.Resource", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<decimal?>("DailyRate")
                         .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
                     b.Property<decimal?>("HourlyRate")
                         .HasColumnType("decimal(18,2)");
-
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
                     b.Property<int?>("ResourceTypeId")
                         .HasColumnType("int");
-
                     b.HasKey("Id");
-
                     b.HasIndex("ResourceTypeId");
-
                     b.ToTable("Resources");
-
                     b.HasData(
                         new
                         {
@@ -656,27 +660,20 @@ namespace BlazorApp2.Migrations
                             ResourceTypeId = 2
                         });
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.ResourceType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
-
                     b.ToTable("ResourceTypes");
-
                     b.HasData(
                         new
                         {
@@ -697,7 +694,6 @@ namespace BlazorApp2.Migrations
                             Name = "Service"
                         });
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.Booking", b =>
                 {
                     b.HasOne("BlazorApp2.Data.Models.Customer", "Customer")
@@ -705,38 +701,30 @@ namespace BlazorApp2.Migrations
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
                     b.HasOne("BlazorApp2.Data.Models.Resource", "Resource")
                         .WithMany("Bookings")
                         .HasForeignKey("ResourceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
                     b.Navigation("Customer");
-
                     b.Navigation("Resource");
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.Resource", b =>
                 {
                     b.HasOne("BlazorApp2.Data.Models.ResourceType", "ResourceType")
                         .WithMany("Resources")
                         .HasForeignKey("ResourceTypeId")
                         .OnDelete(DeleteBehavior.SetNull);
-
                     b.Navigation("ResourceType");
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.Customer", b =>
                 {
                     b.Navigation("Bookings");
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.Resource", b =>
                 {
                     b.Navigation("Bookings");
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.ResourceType", b =>
                 {
                     b.Navigation("Resources");
@@ -745,20 +733,17 @@ namespace BlazorApp2.Migrations
         }
     }
 }
+```
 
-================
-File: Migrations/ApplicationDbContextModelSnapshot.cs
-================
-// <auto-generated />
+## File: Migrations/ApplicationDbContextModelSnapshot.cs
+```csharp
 using System;
 using BlazorApp2.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-
 #nullable disable
-
 namespace BlazorApp2.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
@@ -770,106 +755,73 @@ namespace BlazorApp2.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
-
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
             modelBuilder.Entity("BlazorApp2.Data.Models.Booking", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
-
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
-
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("ResourceId")
                         .HasColumnType("int");
-
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
-
                     b.Property<int>("Status")
                         .HasColumnType("int");
-
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
-
                     b.HasKey("Id");
-
                     b.HasIndex("CustomerId");
-
                     b.HasIndex("ResourceId");
-
                     b.ToTable("Bookings");
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.Customer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
-
                     b.ToTable("Customers");
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.Resource", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<decimal?>("DailyRate")
                         .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
                     b.Property<decimal?>("HourlyRate")
                         .HasColumnType("decimal(18,2)");
-
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
                     b.Property<int?>("ResourceTypeId")
                         .HasColumnType("int");
-
                     b.HasKey("Id");
-
                     b.HasIndex("ResourceTypeId");
-
                     b.ToTable("Resources");
-
                     b.HasData(
                         new
                         {
@@ -902,27 +854,20 @@ namespace BlazorApp2.Migrations
                             ResourceTypeId = 2
                         });
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.ResourceType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
-
                     b.ToTable("ResourceTypes");
-
                     b.HasData(
                         new
                         {
@@ -943,7 +888,6 @@ namespace BlazorApp2.Migrations
                             Name = "Service"
                         });
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.Booking", b =>
                 {
                     b.HasOne("BlazorApp2.Data.Models.Customer", "Customer")
@@ -951,38 +895,30 @@ namespace BlazorApp2.Migrations
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
                     b.HasOne("BlazorApp2.Data.Models.Resource", "Resource")
                         .WithMany("Bookings")
                         .HasForeignKey("ResourceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
                     b.Navigation("Customer");
-
                     b.Navigation("Resource");
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.Resource", b =>
                 {
                     b.HasOne("BlazorApp2.Data.Models.ResourceType", "ResourceType")
                         .WithMany("Resources")
                         .HasForeignKey("ResourceTypeId")
                         .OnDelete(DeleteBehavior.SetNull);
-
                     b.Navigation("ResourceType");
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.Customer", b =>
                 {
                     b.Navigation("Bookings");
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.Resource", b =>
                 {
                     b.Navigation("Bookings");
                 });
-
             modelBuilder.Entity("BlazorApp2.Data.Models.ResourceType", b =>
                 {
                     b.Navigation("Resources");
@@ -991,34 +927,22 @@ namespace BlazorApp2.Migrations
         }
     }
 }
+```
 
-================
-File: Program.cs
-================
+## File: Program.cs
+```csharp
 using BlazorApp2.Components;
 using BlazorApp2.Data;
 using BlazorApp2.Data.Services;
 using Microsoft.EntityFrameworkCore;
-
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
-
-// Add DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Register services
 builder.Services.AddScoped<BookingService>();
-
 var app = builder.Build();
-
-// Initialize the database
 await DbInitializer.InitializeAsync(app);
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
@@ -1028,19 +952,28 @@ else
     app.UseExceptionHandler("/Error", true);
     app.UseHsts();
 }
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
-
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(BlazorApp2.Client._Imports).Assembly);
-
 app.Run();
+```
 
 
+# Instruction
+﻿# Guidelines
 
-================================================================
-End of Codebase
-================================================================
+- Write simple and clean code, prioritize readability and maintainability.
+- Avoid unnecessary complexity, keep it concise and straightforward.
+- Keep the output super minimal and concise.
+- in Output, generate PowerShell script for automating modifications to the code.
+
+# Project Stack
+
+- **Back-End**: .NET 9.0, ASP.NET Core, C# 13.0
+- **Front-End**: Razor ASP.NET Core, Blazor, Tailwind CSS 3.4.1
+- **Languages**: C#, JavaScript
+- **Package Manager**: npm
+- **Guidelines**: Write simple code, no overkill, super concise responses

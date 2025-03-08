@@ -9,5 +9,18 @@
       "**/debug/**",
       "**/appsettings*.json"
     ]
+  },
+  "output": {
+    "copyToClipboard": true,
+    "style": "markdown",
+    "compress": false,
+    "fileSummary": true,
+    "directoryStructure": true,
+    "removeComments": true,
+    "removeEmptyLines": true,
+    "instructionFilePath": "repomix-instruction.md"
+  },
+  "security": {
+    "enableSecurityCheck": true
   }
 }
