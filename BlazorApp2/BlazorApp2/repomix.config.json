@@ -16,8 +16,8 @@
     "compress": false,
     "fileSummary": true,
     "directoryStructure": true,
-    "removeComments": true,
-    "removeEmptyLines": true,
+    "removeComments": false,
+    "removeEmptyLines": false,
     "instructionFilePath": "repomix-instruction.md"
   },
   "security": {
