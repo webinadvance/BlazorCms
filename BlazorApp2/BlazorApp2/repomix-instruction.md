@@ -5,19 +5,8 @@
 - **Languages**: C#, JavaScript
 - **Package Manager**: npm
 - **Guidelines**: Write simple code, no overkill, super concise responses
--
-
-# Guidelines
-
-- Write simple and clean code, prioritize readability and maintainability.
-- Avoid unnecessary complexity, keep it concise and straightforward.
-- Super minimal and as less as possible modifications
-- IMPORTANT: Present all code modifications as standard git patch files
-- Don't add comments
--
 
 # Code Output
 
-- Super concise OUTPUT
-
-Present all code modifications as standard git patch files
+- Super concise answers, use as less tokens as you can
+- Present all code modifications as standard git patch files, Put all patches into a single file so i can copy/paste it
