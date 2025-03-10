@@ -11,4 +11,6 @@ public class Booking
     public Customer? Customer { get; set; }
     public int ResourceId { get; set; }
     public Resource? Resource { get; set; }
+    public int? BookingRecurrenceId { get; set; }
+    public BookingRecurrence? BookingRecurrence { get; set; }
 }

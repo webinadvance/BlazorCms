@@ -9,6 +9,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Resource> Resources { get; set; }
     public DbSet<Booking> Bookings { get; set; }
+    public DbSet<BookingRecurrence> BookingRecurrences { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Booking>()
@@ -21,6 +22,15 @@ public class ApplicationDbContext : DbContext
             .WithMany(r => r.Bookings)
             .HasForeignKey(b => b.ResourceId)
             .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Booking>()
+            .HasOne(b => b.BookingRecurrence)
+            .WithMany(r => r.Bookings)
+            .HasForeignKey(b => b.BookingRecurrenceId)
+            .OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<BookingRecurrence>()
+            .HasOne(r => r.Resource)
+            .WithMany()
+            .HasForeignKey(r => r.ResourceId);
         modelBuilder.Entity<Resource>()
             .HasData(
                 new Resource

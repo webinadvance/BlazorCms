@@ -96,4 +96,102 @@ public class BookingService
         await _context.SaveChangesAsync();
         return booking;
     }
+    
+    public async Task<BookingRecurrence> CreateRecurringBookingAsync(BookingRecurrence recurrence)
+    {
+        _context.BookingRecurrences.Add(recurrence);
+        await _context.SaveChangesAsync();
+        
+        var bookingDates = GenerateRecurringBookingDates(recurrence);
+        var resource = await _context.Resources.FindAsync(recurrence.ResourceId);
+        
+        foreach (var date in bookingDates)
+        {
+            var booking = new Booking
+            {
+                StartTime = date,
+                EndTime = date.Add(recurrence.Duration),
+                ResourceId = recurrence.ResourceId,
+                CustomerId = recurrence.CustomerId,
+                Status = BookingStatus.Confirmed,
+                BookingRecurrenceId = recurrence.Id
+            };
+            
+            if (resource != null)
+            {
+                var duration = booking.EndTime - booking.StartTime;
+                if (duration.TotalHours <= 24 && resource.HourlyRate.HasValue)
+                {
+                    booking.TotalPrice = (decimal)duration.TotalHours * resource.HourlyRate.Value;
+                }
+                else if (resource.DailyRate.HasValue)
+                {
+                    var days = Math.Ceiling(duration.TotalDays);
+                    booking.TotalPrice = (decimal)days * resource.DailyRate.Value;
+                }
+            }
+            
+            _context.Bookings.Add(booking);
+        }
+        
+        await _context.SaveChangesAsync();
+        return recurrence;
+    }
+    
+    private List<DateTime> GenerateRecurringBookingDates(BookingRecurrence recurrence)
+    {
+        var dates = new List<DateTime>();
+        var currentDate = recurrence.StartDate;
+        
+        // Determine end condition
+        DateTime? endDateTime = null;
+        if (recurrence.EndDate.HasValue)
+        {
+            endDateTime = recurrence.EndDate.Value;
+        }
+        else if (recurrence.OccurrenceCount.HasValue)
+        {
+            // For count-based recurrence, we'll calculate as we go
+        }
+        else
+        {
+            // Default to 1 year max if no end condition specified
+            endDateTime = recurrence.StartDate.AddYears(1);
+        }
+        
+        int occurrenceCounter = 0;
+        
+        while ((!endDateTime.HasValue || currentDate <= endDateTime) && 
+               (!recurrence.OccurrenceCount.HasValue || occurrenceCounter < recurrence.OccurrenceCount.Value))
+        {
+            switch (recurrence.RecurrenceType)
+            {
+                case RecurrenceType.Daily:
+                    dates.Add(currentDate);
+                    currentDate = currentDate.AddDays(recurrence.Interval);
+                    break;
+                case RecurrenceType.Weekly:
+                    if (string.IsNullOrEmpty(recurrence.DaysOfWeek))
+                    {
+                        dates.Add(currentDate);
+                        currentDate = currentDate.AddDays(7 * recurrence.Interval);
+                    }
+                    else
+                    {
+                        var daysOfWeek = recurrence.DaysOfWeek.Split(',').Select(int.Parse).ToList();
+                        if (daysOfWeek.Contains((int)currentDate.DayOfWeek))
+                        {
+                            dates.Add(currentDate);
+                        }
+                        currentDate = currentDate.AddDays(1);
+                    }
+                    break;
+                // Implement other recurrence types (Monthly, Yearly, Custom)
+            }
+            
+            occurrenceCounter++;
+        }
+        
+        return dates;
+    }
 }
