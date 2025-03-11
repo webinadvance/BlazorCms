@@ -1,0 +1,53 @@
+﻿@page "/bookings"
+@using ClassLibrary1.Models
+@inject HttpClient Http
+
+<PageTitle>Bookings</PageTitle>
+
+<h1>Bookings</h1>
+
+@if (bookings == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="w-full border-collapse">
+        <thead>
+        <tr class="bg-gray-100">
+            <th class="p-2 border">Resource</th>
+            <th class="p-2 border">Customer</th>
+            <th class="p-2 border">Start Time</th>
+            <th class="p-2 border">End Time</th>
+            <th class="p-2 border">Status</th>
+            <th class="p-2 border">Price</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var booking in bookings)
+        {
+            <tr>
+                <td class="p-2 border">@booking.StartTime.ToString("g")</td>
+                <td class="p-2 border">@booking.EndTime.ToString("g")</td>
+                <td class="p-2 border">@booking.Status</td>
+                <td class="p-2 border">$@booking.TotalPrice</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Booking[]? bookings;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            bookings = await Http.GetFromJsonAsync<Booking[]>("api/bookings");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+}

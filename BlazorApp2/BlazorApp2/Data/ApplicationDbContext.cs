@@ -1,4 +1,4 @@
-﻿using BlazorApp2.Data.Models;
+﻿using ClassLibrary1.Models;
 using Microsoft.EntityFrameworkCore;
 namespace BlazorApp2.Data;
 public class ApplicationDbContext : DbContext

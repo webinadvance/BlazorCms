@@ -1,4 +1,4 @@
-﻿using BlazorApp2.Data.Models;
+﻿using ClassLibrary1.Models;
 using Microsoft.EntityFrameworkCore;
 namespace BlazorApp2.Data.Services;
 public class BookingService
@@ -96,15 +96,12 @@ public class BookingService
         await _context.SaveChangesAsync();
         return booking;
     }
-    
     public async Task<BookingRecurrence> CreateRecurringBookingAsync(BookingRecurrence recurrence)
     {
         _context.BookingRecurrences.Add(recurrence);
         await _context.SaveChangesAsync();
-        
         var bookingDates = GenerateRecurringBookingDates(recurrence);
         var resource = await _context.Resources.FindAsync(recurrence.ResourceId);
-        
         foreach (var date in bookingDates)
         {
             var booking = new Booking
@@ -116,7 +113,6 @@ public class BookingService
                 Status = BookingStatus.Confirmed,
                 BookingRecurrenceId = recurrence.Id
             };
-            
             if (resource != null)
             {
                 var duration = booking.EndTime - booking.StartTime;
@@ -130,19 +126,16 @@ public class BookingService
                     booking.TotalPrice = (decimal)days * resource.DailyRate.Value;
                 }
             }
-            
             _context.Bookings.Add(booking);
         }
-        
         await _context.SaveChangesAsync();
         return recurrence;
     }
-    
     private List<DateTime> GenerateRecurringBookingDates(BookingRecurrence recurrence)
     {
         var dates = new List<DateTime>();
         var currentDate = recurrence.StartDate;
-        
+
         // Determine end condition
         DateTime? endDateTime = null;
         if (recurrence.EndDate.HasValue)
@@ -158,11 +151,10 @@ public class BookingService
             // Default to 1 year max if no end condition specified
             endDateTime = recurrence.StartDate.AddYears(1);
         }
-        
-        int occurrenceCounter = 0;
-        
-        while ((!endDateTime.HasValue || currentDate <= endDateTime) && 
-               (!recurrence.OccurrenceCount.HasValue || occurrenceCounter < recurrence.OccurrenceCount.Value))
+        var occurrenceCounter = 0;
+        while ((!endDateTime.HasValue || currentDate <= endDateTime) && (!recurrence.OccurrenceCount.HasValue ||
+                                                                         occurrenceCounter <
+                                                                         recurrence.OccurrenceCount.Value))
         {
             switch (recurrence.RecurrenceType)
             {
@@ -178,20 +170,17 @@ public class BookingService
                     }
                     else
                     {
-                        var daysOfWeek = recurrence.DaysOfWeek.Split(',').Select(int.Parse).ToList();
-                        if (daysOfWeek.Contains((int)currentDate.DayOfWeek))
-                        {
-                            dates.Add(currentDate);
-                        }
+                        var daysOfWeek = recurrence.DaysOfWeek.Split(',')
+                            .Select(int.Parse)
+                            .ToList();
+                        if (daysOfWeek.Contains((int)currentDate.DayOfWeek)) dates.Add(currentDate);
                         currentDate = currentDate.AddDays(1);
                     }
                     break;
                 // Implement other recurrence types (Monthly, Yearly, Custom)
             }
-            
             occurrenceCounter++;
         }
-        
         return dates;
     }
 }

@@ -1,5 +1,5 @@
-﻿using BlazorApp2.Data.Models;
-using BlazorApp2.Data.Services;
+﻿using BlazorApp2.Data.Services;
+using ClassLibrary1.Models;
 using Microsoft.AspNetCore.Mvc;
 namespace BlazorApp2.Controllers;
 [ApiController]
