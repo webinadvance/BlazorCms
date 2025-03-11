@@ -15,15 +15,16 @@ builder.Services.AddControllers()
     .AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 // Add DbContext
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=bookingApp.db";
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(connectionString));
 
 // Register services
 builder.Services.AddScoped<BookingService>();
 var app = builder.Build();
 
 // Initialize the database
-await DbInitializer.InitializeAsync(app);
+var autoMigrate = builder.Configuration.GetValue("Database:AutoMigrate", true);
+if (autoMigrate) await DbInitializer.InitializeAsync(app);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
