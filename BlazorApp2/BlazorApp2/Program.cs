@@ -23,8 +23,7 @@ builder.Services.AddScoped<BookingService>();
 var app = builder.Build();
 
 // Initialize the database
-var autoMigrate = builder.Configuration.GetValue("Database:AutoMigrate", true);
-if (autoMigrate) await DbInitializer.InitializeAsync(app);
+await DbInitializer.InitializeAsync(app);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
